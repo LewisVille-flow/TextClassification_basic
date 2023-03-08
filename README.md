@@ -1,38 +1,58 @@
 # Project Description
 ### Purpose of Project
-해당 프로젝트는 22-1 CSE4048 수업의 Second Mini Project로, RNN을 활용한 Text Classification Project를 수행. 주어진 여러 문장을 특정 그룹(4개의 학과 명 중 하나)으로 categorizing하는 것이 목표.
+RNN 계열 모델을 활용한 Text Classification Project.  
+주어진 여러 문장을 특정 그룹(4개의 학과 명 중 하나)으로 categorizing하는 것이 목표.  
+(This is second mini project from 2022-1 CSE4048 lecture.)
 
 ### Dataset
-**Sample Data**
-
-
-### Class Overview
-*****picture should be here.
+</p>
+<p align="center">
+	<img src="./img/readme/sampledata.png">
+	<figcaption align="center">[사진 1] train data의 text, label 예시</figcaption>
+</p>
 
 ### File Description
 
-**Skeleton Files**  
+**Skeleton Files**
+
 - train.py  
-train and save the model you made.
+Train and save the model you made.
+
 - model.py  
-change model parameters and architecture.
-프로젝트 진행을 위해 직접 RNN계열 모델을 설계하고 테스트 해야함.
+Change model parameters and architecture.
 - vocab.py  
-build the vocabulary of train data.
+Build the vocabulary of train data.
 - util.py  
-add padding to the batches.
+Add padding to the batches.
 - dataset.py  
 Load dataset and make data loader.
 - test.py  
 Use this file to test your saved models.
-Write the same model parameters as in the train.py
+Write the same model parameters as in the train.py  
+
 ### How to start
+```bash
+# You can see argument description using -h
+$ python test.py
+```
 
 # Result
-*****Graph and table should be here.
+
+</p>
+<p align="center">
+	<img src="./img/readme/model_20230209_2200_LSTM.png" width=80% height=80%>
+	<figcaption align="center">[사진 2] Learning graph of LSTM(1 layer)</figcaption>
+</p>
+Test acc is around 80%.  
+
+More graphs would be updated soon.  
 
 ### Analysis
 
+
 ### Reference
 
+
 ### Update
+2022.05-06 project develop  
+2023.03 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;project update
