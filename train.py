@@ -6,19 +6,24 @@ from model import GRUModel, LSTMModel, PackedLSTMModel
 from dataset import TextDataset, make_data_loader
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
-from util import MyCollate
+from util import MyCollate, init_obj
 
 def acc(pred,label):
     pred = pred.argmax(dim=-1)
     return torch.sum(pred == label).item()
 
-def train(args, data_loader, valid_loader, model):
+def train(args, config, data_loader, valid_loader, model):
     """
     TODO: Change the training code as you need. (e.g. different optimizer, different loss function, etc.)
             You can add validation code. -> This will increase the accuracy.
     """
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    
+    # config test : make it module
+    learnable_param = filter(lambda x:x.requires_grad, model.parameters())
+    optimizer = init_obj(config, 'optimizer', torch.optim, learnable_param)
+    
     min_loss = np.Inf
 
     # for visualising learning graph
@@ -46,6 +51,7 @@ def train(args, data_loader, valid_loader, model):
             output, _ = model(text)
             #print("output size: ", output.size()) # output size:  torch.Size([1, 128, 4]) packed 일 때
             #print("output size: ", output.size())  # output size:  torch.Size([128, 4])
+            output = torch.squeeze(output)
             
             # output 모양만 바뀐다. 튜플이다, 여기서는 지금.
             # label은 모델이 달라도 torch.Size([1, 128]) 이다.
@@ -126,57 +132,3 @@ def train(args, data_loader, valid_loader, model):
     plt.tight_layout()
     plt.show()
     fig.savefig('./img/model_temp.png', bbox_inches = 'tight')
-
-
-if __name__ == '__main__':
-
-
-    parser = argparse.ArgumentParser(description='2022 DL Term Project #2')
-    parser.add_argument('--data_dir', type=str, default='./Data')
-    parser.add_argument('--batch_size', type=int, default=128, help="Batch size for training (default: 64)")
-    parser.add_argument('--vocab_size', type=int, default=30000, help="maximum vocab size")
-    parser.add_argument('--batch_first', action='store_true', help="If true, then the model returns the batch first")
-    parser.add_argument('--learning_rate', type=float, default=0.001, help="Learning rate (default: 0.001)")
-    parser.add_argument('--num_epochs', type=int, default=20, help="Number of epochs to train for (default: 5)")
-    
-    args = parser.parse_args()
-
-    """
-    TODO: Build your model Parameters. You can change the model architecture and hyperparameters as you wish.
-            (e.g. change epochs, vocab_size, hidden_dim etc.)
-    """
-    # Model hyperparameters
-    input_size = args.vocab_size
-    output_size = 4     # num of classes
-    embedding_dim = 100 # embedding dimension
-    hidden_dim = 64  # hidden size of RNN
-    num_layers = 1
-    
-    # Make Train Loader
-    train_dataset = TextDataset(args.data_dir, 'train', args.vocab_size)
-    args.pad_idx = train_dataset.sentences_vocab.wtoi['<PAD>']
-    train_loader = make_data_loader(train_dataset, args.batch_size, args.batch_first, shuffle=True)
-
-    # Valid Loader(added)
-    valid_dataset = TextDataset(args.data_dir, 'val', args.vocab_size)
-    args.pad_idx = valid_dataset.sentences_vocab.wtoi['<PAD>']
-    valid_loader = make_data_loader(valid_dataset, args.batch_size, args.batch_first, shuffle=True)
-    
-
-    # train val split test
-    print("train and valid length each: {}, {}".format(len(train_dataset.sentences), len(valid_dataset.sentences)))
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    args.device = device
-    print("device : ", device)
-
-    # instantiate model
-    #model = BaseModel(input_size, output_size, embedding_dim, hidden_dim, num_layers, batch_first=args.batch_first)
-    model = LSTMModel(input_size, output_size, embedding_dim, hidden_dim, num_layers, batch_first=args.batch_first)
-    #model = PackedLSTMModel(input_size, output_size, embedding_dim, hidden_dim, num_layers, batch_first=args.batch_first)
-    
-    model = model.to(device)
-
-    # Training The Model
-    print("##### start training #####\n")
-    train(args, train_loader, valid_loader, model)

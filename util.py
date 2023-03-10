@@ -1,16 +1,14 @@
 from torch.nn.utils.rnn import pad_sequence
+import json
+from pathlib import Path
+from collections import OrderedDict
 
-
-#######################################################
-#               Collate fn
-#######################################################
-
-'''
-class to add padding to the batches
-collat_fn in dataloader is used for post processing on a single batch. Like __getitem__ in dataset class is used on single example
-'''
 
 class MyCollate:
+    '''
+    class to add padding to the batches
+    collat_fn in dataloader is used for post processing on a single batch. Like __getitem__ in dataset class is used on single example
+    '''
     def __init__(self, pad_idx, batch_first):
         self.pad_idx = pad_idx
         self.batch_first = batch_first
@@ -31,3 +29,15 @@ class MyCollate:
         target = pad_sequence(target, batch_first=self.batch_first, padding_value = self.pad_idx)
         return source, target
 
+def read_json(fname):
+    fname = Path(fname)
+    with fname.open('rt') as fhandle:
+        return json.load(fhandle, object_hook=OrderedDict)
+    
+def init_obj(config, name, module, *args, **kwargs):
+    module_name = config[name]['type']
+    module_args = dict(config[name]['args'])
+    assert all(k not in module_args for k in kwargs)
+    print(f"module name: {module_name}, module_args: {module_args}")
+    
+    return getattr(module, module_name)(*args, **module_args)
